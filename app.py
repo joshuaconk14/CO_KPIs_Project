@@ -4,6 +4,21 @@ import numpy as np
 import plotly.express as px
 
 def app():
+    # Define the background color
+    background_color = "#1C1C1C"  # Light gray, change to any color you prefer
+
+    # Custom HTML with CSS
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-color: {background_color};
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     # Project title
     title_html = """
     <h1 style = "text-align: center; color: gray; padding: 20px; font-size: 1.8em;">ConklinOfficial KPI Dashboard - Analyzing Relationship between KPIs and Content</h1>
