@@ -98,7 +98,6 @@ def app():
 
 
 
-    #isnt working ???
 
     # Allow user to click permalink based off of the amount of likes it has, split into 3 columns
     st.write("### Click on a date to open the corresponding Instagram post") 
