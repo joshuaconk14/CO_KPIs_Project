@@ -14,3 +14,10 @@ venv/
 
 # System Files
 .DS_Store
+
+
+
+# web app
+
+#target folder
+target/

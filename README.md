@@ -1,74 +1,115 @@
-# ConklinOfficial KPI Dashboard
+# Instagram KPI Dashboard
 
-## Overview
+A real-time Instagram KPI dashboard built with React, Spring Boot, and WebSocket technology.
 
-The ConklinOfficial KPI Dashboard is an interactive web application built using Streamlit, designed to analyze the relationship between Key Performance Indicators (KPIs) and content shared on social media platforms. This dashboard provides insights into various metrics such as likes, shares, saves, and more, helping users understand the performance of their content over time.
+## Project Structure
 
-## Features
+```
+instagram-kpi-dashboard/
+├── frontend/                 # React frontend application
+│   ├── public/              # Static files
+│   └── src/                 # React source code
+├── backend/                 # Spring Boot backend application
+│   ├── src/                # Java source code
+│   └── pom.xml             # Maven dependencies
+└── docker/                 # Docker configuration files
+```
 
-- **Data Visualization**: Interactive charts displaying KPIs over time, allowing users to visualize trends and performance.
-- **Dynamic KPI Selection**: Users can select different KPIs to analyze, including likes, shares, saves, reach, and more.
-- **Performance Analysis**: The dashboard highlights good and bad performance metrics using percentile lines, making it easy to identify high and low-performing posts.
-- **User-Friendly Interface**: A clean and responsive layout that enhances user experience.
+## Technology Stack
 
-## Technologies Used
+- **Frontend**: React.js with TypeScript
+- **Backend**: Spring Boot 3.x
+- **Database**: PostgreSQL
+- **Cloud**: Azure
+- **Real-time Updates**: WebSocket
+- **Containerization**: Docker
 
-- **Python**: The primary programming language for the application.
-- **Streamlit**: A powerful framework for building web applications in Python.
-- **Pandas**: For data manipulation and analysis.
-- **NumPy**: For numerical operations.
-- **Plotly**: For creating interactive visualizations.
+## Prerequisites
 
-## Installation
+- Node.js (v18 or higher)
+- Java 17 or higher
+- Maven
+- PostgreSQL
+- Docker (optional)
 
-To run this project locally, follow these steps:
+## Getting Started
 
-1. **Clone the repository**:
+### Backend Setup
+
+1. Navigate to the backend directory:
    ```bash
-   git clone https://github.com/yourusername/conklinofficial-kpi-dashboard.git
-   cd conklinofficial-kpi-dashboard
+   cd backend
    ```
 
-2. **Create a virtual environment** (optional but recommended):
+2. Build the project:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   ./mvnw clean install
    ```
 
-3. **Install the required packages**:
+3. Run the application:
    ```bash
-   pip install -r requirements.txt
+   ./mvnw spring-boot:run
    ```
 
-4. **Run the application**:
+### Frontend Setup
+
+1. Navigate to the frontend directory:
    ```bash
-   streamlit run app.py
+   cd frontend
    ```
 
-5. **Open your web browser** and navigate to `http://localhost:8501` to view the dashboard.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Usage
+3. Start the development server:
+   ```bash
+   npm start
+   ```
 
-Once the application is running, you can:
+## Development
 
-- View raw data from the CSV file.
-- Analyze likes on posts over the last three months.
-- Click on dates to view corresponding Instagram posts.
-- Select different KPIs from a dropdown menu to visualize their performance.
+- Backend runs on: http://localhost:8080
+- Frontend runs on: http://localhost:3000
+- WebSocket endpoint: ws://localhost:8080/ws/kpi
+
+## Production Deployment
+
+The application is containerized using Docker and can be deployed to Azure:
+
+1. Build the Docker images:
+   ```bash
+   docker-compose build
+   ```
+
+2. Run the containers:
+   ```bash
+   docker-compose up -d
+   ```
+
+## Environment Variables
+
+Create `.env` files in both frontend and backend directories with the following variables:
+
+### Backend (.env)
+```
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/instagram_kpi
+SPRING_DATASOURCE_USERNAME=your_username
+SPRING_DATASOURCE_PASSWORD=your_password
+INSTAGRAM_API_KEY=your_instagram_api_key
+```
+
+### Frontend (.env)
+```
+REACT_APP_API_URL=http://localhost:8080
+REACT_APP_WS_URL=ws://localhost:8080/ws/kpi
+```
 
 ## Contributing
 
-Contributions are welcome! If you have suggestions for improvements or new features, please open an issue or submit a pull request.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Thanks to the Streamlit community for their support and resources.
-- Special thanks to the contributors who have helped improve this project.
-
-## Contact
-
-For any inquiries, please reach out to [joshua@caffeinated.org](mailto:joshua@caffeinated.org).
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
