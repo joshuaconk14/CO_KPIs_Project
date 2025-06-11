@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/instagram")
-@CrossOrigin(origins = "*")
+@RequestMapping("/instagram")
 public class InstagramController {
     private final InstagramService instagramService;
 

@@ -75,6 +75,7 @@ const TestComponent: React.FC = () => {
             }
             const data = await response.json();
             setPosts(data);
+            console.log('Success! Posts fetched');
             if (data.length > 0) {
                 setSelectedPost(data[0]);
             }
@@ -130,6 +131,41 @@ const TestComponent: React.FC = () => {
                                 <Typography>Impressions: {selectedPost.impressions}</Typography>
                             </Box>
                         )}
+                        {posts.length > 0 && (
+                            <Box sx={{ mt: 2 }}>
+                                <Typography variant="subtitle1">All Posts:</Typography>
+                                <Box sx={{ overflowX: 'auto', mt: 1 }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                        <thead>
+                                            <tr>
+                                                <th style={{ border: '1px solid #ccc', padding: '8px' }}>Caption</th>
+                                                <th style={{ border: '1px solid #ccc', padding: '8px' }}>Posted At</th>
+                                                <th style={{ border: '1px solid #ccc', padding: '8px' }}>Likes</th>
+                                                <th style={{ border: '1px solid #ccc', padding: '8px' }}>Comments</th>
+                                                <th style={{ border: '1px solid #ccc', padding: '8px' }}>Reach</th>
+                                                <th style={{ border: '1px solid #ccc', padding: '8px' }}>Impressions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {posts.map((post) => (
+                                                <tr
+                                                    key={post.id}
+                                                    style={{ cursor: 'pointer', background: selectedPost?.id === post.id ? '#f0f0f0' : 'white' }}
+                                                    onClick={() => setSelectedPost(post)}
+                                                >
+                                                    <td style={{ border: '1px solid #ccc', padding: '8px' }}>{post.caption.substring(0, 50)}...</td>
+                                                    <td style={{ border: '1px solid #ccc', padding: '8px' }}>{new Date(post.postedAt).toLocaleString()}</td>
+                                                    <td style={{ border: '1px solid #ccc', padding: '8px' }}>{post.likes}</td>
+                                                    <td style={{ border: '1px solid #ccc', padding: '8px' }}>{post.comments}</td>
+                                                    <td style={{ border: '1px solid #ccc', padding: '8px' }}>{post.reach}</td>
+                                                    <td style={{ border: '1px solid #ccc', padding: '8px' }}>{post.impressions}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </Box>
+                            </Box>
+                        )}
                     </Paper>
                 </Grid>
 
@@ -141,21 +177,6 @@ const TestComponent: React.FC = () => {
                         <Typography variant="body2" color="text.secondary" gutterBottom>
                             Connection Status: {isConnected ? 'Connected' : 'Disconnected'}
                         </Typography>
-                        {posts.length > 0 && (
-                            <Box sx={{ mt: 2 }}>
-                                <Typography variant="subtitle1">Available Posts:</Typography>
-                                {posts.map((post) => (
-                                    <Button
-                                        key={post.id}
-                                        variant="text"
-                                        onClick={() => setSelectedPost(post)}
-                                        sx={{ display: 'block', textAlign: 'left', mb: 1 }}
-                                    >
-                                        {post.caption.substring(0, 50)}...
-                                    </Button>
-                                ))}
-                            </Box>
-                        )}
                     </Paper>
                 </Grid>
             </Grid>
