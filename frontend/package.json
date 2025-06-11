@@ -1,23 +1,23 @@
 {
-  "name": "instagram-kpi-dashboard",
+  "name": "instagram-kpi-dashboard-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@emotion/react": "^11.11.3",
+    "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
-    "@mui/material": "^5.15.10",
-    "@mui/icons-material": "^5.15.10",
+    "@mui/material": "^5.15.11",
+    "@mui/icons-material": "^5.15.11",
     "@stomp/stompjs": "^7.0.0",
-    "axios": "^1.6.7",
-    "chart.js": "^4.4.1",
+    "@types/node": "^20.11.24",
+    "@types/react": "^18.2.61",
+    "@types/react-dom": "^18.2.19",
+    "@types/sockjs-client": "^1.5.4",
     "react": "^18.2.0",
-    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.22.1",
     "react-scripts": "5.0.1",
     "sockjs-client": "^1.6.1",
     "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^3.5.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -42,11 +42,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.19",
-    "@types/react": "^18.2.55",
-    "@types/react-dom": "^18.2.19",
-    "@types/sockjs-client": "^1.5.4"
   }
 } 
