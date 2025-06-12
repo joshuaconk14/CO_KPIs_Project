@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/instagram")
+@RequestMapping("/api/instagram")
 public class InstagramController {
     private final InstagramService instagramService;
 

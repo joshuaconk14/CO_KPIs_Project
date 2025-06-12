@@ -1,7 +1,7 @@
 package com.instagram.kpi.repository;
 
 import com.instagram.kpi.model.InstagramPost;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaRepository; // CRUDs
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
