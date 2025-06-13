@@ -1,23 +1,37 @@
-# Python
-*.pyc
-__pycache__/
-*.pyo
-*.pyd
-venv/
-.env
-
-# Streamlit
-.streamlit/
-
-# Jupyter Notebook
-*.ipynb_checkpoints
-
-# System Files
+# OS files
 .DS_Store
 
+# Python virtual environment
+venv/
 
+# Backend (Java/Maven)
+backend/target/
+backend/.idea/
+backend/*.iml
+backend/.classpath
+backend/.project
+backend/.settings/
 
-# web app
+# Frontend (Node/React)
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/.env
+frontend/.env.*
 
-#target folder
-target/
+# IDE/editor folders
+.idea/
+.vscode/
+
+# Data files (if not needed in repo)
+data/*.csv
+data/*.xlsx
+data/.DS_Store
+
+# Logs
+*.log
+
+# npm/yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -73,6 +73,13 @@
             <version>2.0.7</version>
         </dependency>
     </dependencies>
+
+    <!-- Development tools
+    <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-devtools</artifactId>
+       <scope>runtime</scope>
+     </dependency> -->
     
     <build>
         <plugins>
