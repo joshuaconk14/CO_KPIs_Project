@@ -3,8 +3,10 @@ package com.instagram.kpi.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "instagram_posts")
 public class InstagramPost {

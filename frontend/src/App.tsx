@@ -1,6 +1,6 @@
 import React from 'react';
 import { ThemeProvider, createTheme } from '@mui/material';
-import TestComponent from './components/TestComponent';
+import Dashboard from './components/Dashboard';
 
 const theme = createTheme({
   palette: {
@@ -16,7 +16,7 @@ const theme = createTheme({
 const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
-      <TestComponent />
+      <Dashboard />
     </ThemeProvider>
   );
 };
