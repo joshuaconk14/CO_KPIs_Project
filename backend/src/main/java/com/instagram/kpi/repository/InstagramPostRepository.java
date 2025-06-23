@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-// provides CRUD methods so dont need to write SQL code
+// provides CRUD methods (-> findBy.Post.Id )so dont need to write SQL code
 @Repository
 public interface InstagramPostRepository extends JpaRepository<InstagramPost, Long> {
     Optional<InstagramPost> findByPostId(String postId);

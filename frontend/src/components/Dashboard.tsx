@@ -3,6 +3,8 @@ import { Box, Grid, Paper, Typography, CircularProgress, Divider, Button } from 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LineChart, Line } from 'recharts';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 import './dashboard.css';
 
 interface AccountKpi {
@@ -58,22 +60,70 @@ const Dashboard: React.FC = () => {
   const [selectedKPI, setSelectedKPI] = useState<string>('likes');
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('month');
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [kpiRes, postsRes] = await Promise.all([
-        fetch('http://localhost:8080/api/instagram/account-kpis'),
-        fetch('http://localhost:8080/api/instagram/posts'),
-      ]);
-      const kpiData = await kpiRes.json();
-      const postsData = await postsRes.json();
-      setAccountKpis(kpiData);
-      setPosts(postsData);
-      setLoading(false);
+      try {
+        const [kpiRes, postsRes] = await Promise.all([
+          fetch('http://localhost:8080/api/instagram/account-kpis'),
+          fetch('http://localhost:8080/api/instagram/posts'),
+        ]);
+        const kpiData = await kpiRes.json();
+        const postsData = await postsRes.json();
+        setAccountKpis(kpiData);
+        setPosts(postsData);
+      } catch (error) {
+        console.error("Failed to fetch initial data", error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
+
+    const client = new Client({
+      webSocketFactory: () => new SockJS('http://localhost:8080/ws/kpi'),
+      onConnect: () => {
+        console.log('WebSocket Connected');
+        client.subscribe('/topic/kpi-updates', message => {
+          const updatedData = JSON.parse(message.body);
+          // Check if it's post data or account kpi data
+          if (Array.isArray(updatedData) && updatedData.length > 0) {
+            if ('postId' in updatedData[0]) {
+              console.log('Received post updates via WebSocket');
+              setPosts(updatedData);
+            } else if ('followers' in updatedData[0]) {
+              console.log('Received account KPI updates via WebSocket');
+              setAccountKpis(updatedData);
+            }
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error('Broker reported error: ' + frame.headers['message']);
+        console.error('Additional details: ' + frame.body);
+      },
+    });
+
+    client.activate();
+
+    return () => {
+      client.deactivate();
+    };
   }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetch('http://localhost:8080/api/instagram/refresh', { method: 'POST' });
+      // Data will be updated by the websocket, no need to fetch manually here.
+    } catch (error) {
+      console.error("Failed to trigger refresh", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Get latest KPI for summary cards
   const latestKpi = accountKpis.length > 0 ? accountKpis[accountKpis.length - 1] : null;
@@ -90,53 +140,84 @@ const Dashboard: React.FC = () => {
     return diffDays <= selectedRange.days;
   });
 
+  const totalReachLast30Days = accountKpis
+    .filter(kpi => {
+      const kpiDate = new Date(kpi.date);
+      const diffTime = now.getTime() - kpiDate.getTime();
+      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+      return diffDays <= 30;
+    })
+    .reduce((total, kpi) => total + (kpi.reach || 0), 0);
+
+  const followerGoal = 150000;
+  const followerProgress = latestKpi && latestKpi.followers != null 
+    ? Math.min((latestKpi.followers / followerGoal) * 100, 100) 
+    : 0;
+
   return (
-    <Box sx={{ p: 3, bgcolor: '#181c2f', minHeight: '100vh', color: 'white' }}>
-      <Typography variant="h3" fontWeight={700} align="center" sx={{ mb: 4, letterSpacing: 1, color: '#bfc9e0' }}>
-        ConklinOfficial KPI Dashboard
-      </Typography>
+    <Box sx={{ flexGrow: 1, p: 3, backgroundColor: '#121212', minHeight: '100vh' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h4" gutterBottom component="div" sx={{ color: 'white' }}>
+          ConklinOfficial KPI Dashboard
+        </Typography>
+        <Button 
+          variant="contained" 
+          onClick={handleRefresh} 
+          disabled={isRefreshing}
+          sx={{ bgcolor: '#3b82f6', '&:hover': { bgcolor: '#2563eb' } }}
+        >
+          {isRefreshing ? <CircularProgress size={24} /> : 'Refresh Data'}
+        </Button>
+      </Box>
       <Grid container spacing={3}>
         {/* Followers, New Followers, Profile Views */}
         <Grid item xs={12} md={3}>
           <Paper sx={{ p: 3, bgcolor: '#23284a', color: 'white', borderRadius: 3 }}>
             <Typography variant="h4" fontWeight={700}>
-              {latestKpi ? `${latestKpi.followers.toLocaleString()}K` : <CircularProgress color="inherit" size={24} />}
+              {latestKpi && latestKpi.followers != null ? `${(latestKpi.followers / 1000).toFixed(1)}K` : <CircularProgress color="inherit" size={24} />}
             </Typography>
             <Typography variant="subtitle1">Followers</Typography>
-            <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
-              <Box sx={{ width: '70%', height: 8, bgcolor: '#2e365a', borderRadius: 2, mr: 1 }}>
-                <Box sx={{ width: '70%', height: 8, bgcolor: '#3b82f6', borderRadius: 2 }} />
+            <Box sx={{ mt: 1, width: '100%' }}>
+              <Box sx={{ width: '100%', height: 8, bgcolor: '#2e365a', borderRadius: 2 }}>
+                <Box sx={{ width: `${followerProgress}%`, height: 8, bgcolor: '#3b82f6', borderRadius: 2 }} />
               </Box>
-              <Typography variant="body2">70%</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5 }}>
+                <Typography variant="caption" sx={{ color: '#a0a0a0' }}>
+                  Goal: 150k
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#bfc9e0' }}>
+                  {followerProgress.toFixed(0)}%
+                </Typography>
+              </Box>
             </Box>
           </Paper>
         </Grid>
         <Grid item xs={12} md={3}>
           <Paper sx={{ p: 3, bgcolor: '#23284a', color: 'white', borderRadius: 3 }}>
             <Typography variant="h5" fontWeight={700}>
-              {latestKpi ? latestKpi.newFollowers : <CircularProgress color="inherit" size={24} />}
+              {latestKpi && latestKpi.newFollowers != null ? latestKpi.newFollowers : <CircularProgress color="inherit" size={24} />}
             </Typography>
             <Typography variant="subtitle1">New followers</Typography>
-            <Typography variant="body2" color={latestKpi && prevKpi && latestKpi.newFollowers > prevKpi.newFollowers ? 'success.main' : 'error.main'}>
-              {latestKpi && prevKpi ? `${latestKpi.newFollowers - prevKpi.newFollowers > 0 ? '+' : ''}${latestKpi.newFollowers - prevKpi.newFollowers} vs last` : ''}
+            <Typography variant="body2" color={latestKpi && latestKpi.newFollowers != null && prevKpi && prevKpi.newFollowers != null && latestKpi.newFollowers > prevKpi.newFollowers ? 'success.main' : 'error.main'}>
+              {latestKpi && latestKpi.newFollowers != null && prevKpi && prevKpi.newFollowers != null ? `${latestKpi.newFollowers - prevKpi.newFollowers > 0 ? '+' : ''}${latestKpi.newFollowers - prevKpi.newFollowers} vs last` : ''}
             </Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} md={3}>
           <Paper sx={{ p: 3, bgcolor: '#23284a', color: 'white', borderRadius: 3 }}>
             <Typography variant="h5" fontWeight={700}>
-              {latestKpi ? latestKpi.profileViews.toLocaleString() : <CircularProgress color="inherit" size={24} />}
+              {latestKpi && latestKpi.profileViews != null ? latestKpi.profileViews.toLocaleString() : <CircularProgress color="inherit" size={24} />}
             </Typography>
             <Typography variant="subtitle1">Profile views</Typography>
-            <Typography variant="body2" color={latestKpi && prevKpi && latestKpi.profileViews > prevKpi.profileViews ? 'success.main' : 'error.main'}>
-              {latestKpi && prevKpi ? `${latestKpi.profileViews - prevKpi.profileViews > 0 ? '+' : ''}${latestKpi.profileViews - prevKpi.profileViews} vs last` : ''}
+            <Typography variant="body2" color={latestKpi && latestKpi.profileViews != null && prevKpi && prevKpi.profileViews != null && latestKpi.profileViews > prevKpi.profileViews ? 'success.main' : 'error.main'}>
+              {latestKpi && latestKpi.profileViews != null && prevKpi && prevKpi.profileViews != null ? `${latestKpi.profileViews - prevKpi.profileViews > 0 ? '+' : ''}${latestKpi.profileViews - prevKpi.profileViews} vs last` : ''}
             </Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} md={3}>
           <Paper sx={{ p: 3, bgcolor: '#23284a', color: 'white', borderRadius: 3 }}>
             <Typography variant="h5" fontWeight={700}>
-              {latestKpi ? latestKpi.reach.toLocaleString() : <CircularProgress color="inherit" size={24} />}
+              {totalReachLast30Days > 0 ? totalReachLast30Days.toLocaleString() : <CircularProgress color="inherit" size={24} />}
             </Typography>
             <Typography variant="subtitle1">Reach (last 30 days)</Typography>
           </Paper>
@@ -215,7 +296,7 @@ const Dashboard: React.FC = () => {
             <Typography variant="body2">Likes</Typography>
             <Typography variant="h5">{latestKpi ? latestKpi.pinnedReelSaves : '-'}</Typography>
             <Typography variant="body2">Saves</Typography>
-            <Typography variant="h5">{latestKpi ? latestKpi.pinnedReelWatchTime : '-'}s</Typography>
+            <Typography variant="h5">{latestKpi ? latestKpi.pinnedReelWatchTime : '-'}</Typography>
             <Typography variant="body2">Avg. watch time</Typography>
           </Paper>
         </Grid>

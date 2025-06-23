@@ -45,3 +45,9 @@ management:
   endpoint:
     health:
       show-details: always 
+
+instagram:
+  api:
+    graph-api-version: v19.0
+    access-token: ${INSTAGRAM_USER_ACCESS_TOKEN}
+    business-account-id: ${INSTAGRAM_BUSINESS_ACCOUNT_ID}

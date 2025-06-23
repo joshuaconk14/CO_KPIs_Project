@@ -29,7 +29,7 @@ public class InstagramController {
 
     @PostMapping("/refresh")
     public ResponseEntity<Void> refreshPosts() {
-        instagramService.fetchLatestPosts();
+        instagramService.refreshAllData();
         return ResponseEntity.ok().build();
     }
 } 
