@@ -22,6 +22,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.io.*;
+import java.util.Properties;
 
 @Service
 public class InstagramService {
@@ -44,6 +46,19 @@ public class InstagramService {
 
     @Value("${instagram.api.business-account-id}")
     private String businessAccountId;
+
+    @Value("${facebook.app-id}")
+    private String facebookAppId;
+
+    @Value("${facebook.app-secret}")
+    private String facebookAppSecret;
+
+    @Value("${facebook.short-lived-token}")
+    private String facebookShortLivedToken;
+
+    private static final String ENV_FILE_PATH = "backend/.env";
+
+    private static final long FIFTY_DAYS_MILLIS = 50L * 24 * 60 * 60 * 1000;
 
     public InstagramService(InstagramPostRepository postRepository,
                             InstagramAccountKpiRepository accountKpiRepository,
@@ -138,7 +153,7 @@ public class InstagramService {
                         }
                     } else {
                         // Fallback to separate insights call if not included in main response
-                        setPostInsights(post);
+                    setPostInsights(post);
                     }
 
                     fetchedPosts.add(postRepository.save(post));
@@ -304,6 +319,41 @@ public class InstagramService {
 
         } catch(Exception e) {
             log.error("Could not fetch account KPIs", e);
+        }
+    }
+
+    @Scheduled(fixedRate = FIFTY_DAYS_MILLIS) // 50 days in milliseconds
+    public void refreshLongLivedToken() {
+        log.info("Attempting to refresh long-lived Instagram token...");
+        try {
+            String url = String.format(
+                "https://graph.facebook.com/v23.0/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s",
+                facebookAppId, facebookAppSecret, facebookShortLivedToken
+            );
+            String response = WebClient.create().get().uri(url).retrieve().bodyToMono(String.class).block();
+            if (response != null && response.contains("access_token")) {
+                String newToken = response.split("\"access_token\":\"")[1].split("\"")[0];
+                updateEnvFile("INSTAGRAM_USER_ACCESS_TOKEN", newToken);
+                log.info("Successfully refreshed and updated long-lived token in .env file.");
+            } else {
+                log.error("Failed to parse new token from response: {}", response);
+            }
+        } catch (Exception e) {
+            log.error("Error refreshing long-lived token", e);
+        }
+    }
+
+    private void updateEnvFile(String key, String value) throws IOException {
+        File envFile = new File(ENV_FILE_PATH);
+        Properties props = new Properties();
+        if (envFile.exists()) {
+            try (FileInputStream fis = new FileInputStream(envFile)) {
+                props.load(fis);
+            }
+        }
+        props.setProperty(key, value);
+        try (FileOutputStream fos = new FileOutputStream(envFile)) {
+            props.store(fos, null);
         }
     }
 

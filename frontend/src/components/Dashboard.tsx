@@ -145,6 +145,8 @@ const Dashboard: React.FC = () => {
 
   // Get the latest post (by postedAt)
   const latestPost = posts.length > 0 ? posts.reduce((a, b) => new Date(a.postedAt) > new Date(b.postedAt) ? a : b) : null;
+  // Get the top post (by likes)
+  const topPost = posts.length > 0 ? posts.reduce((a, b) => (a.likes || 0) > (b.likes || 0) ? a : b) : null;
 
   const now = new Date();
   const selectedRange = timeRanges.find(r => r.value === selectedTimeRange);
@@ -302,18 +304,16 @@ const Dashboard: React.FC = () => {
         {/* Pinned Reel, Latest Post, Latest Story (summary cards) */}
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3, bgcolor: '#23284a', color: 'white', borderRadius: 3 }}>
-            <Typography variant="subtitle1">Pinned reel</Typography>
+            <Typography variant="subtitle1">Top Post</Typography>
             <Divider sx={{ bgcolor: '#2e365a', my: 1 }} />
-            <Typography variant="h5">{latestKpi ? latestKpi.pinnedReelComments : '-'}</Typography>
+            <Typography variant="h5">{topPost && topPost.comments != null ? topPost.comments : '-'}</Typography>
             <Typography variant="body2">Comments</Typography>
-            <Typography variant="h5">{latestKpi ? latestKpi.pinnedReelShares : '-'}</Typography>
+            <Typography variant="h5">{topPost && topPost.shares != null ? topPost.shares : '-'}</Typography>
             <Typography variant="body2">Shares</Typography>
-            <Typography variant="h5">{latestKpi ? latestKpi.pinnedReelLikes : '-'}</Typography>
+            <Typography variant="h5">{topPost && topPost.likes != null ? topPost.likes : '-'}</Typography>
             <Typography variant="body2">Likes</Typography>
-            <Typography variant="h5">{latestKpi ? latestKpi.pinnedReelSaves : '-'}</Typography>
+            <Typography variant="h5">{topPost && topPost.saves != null ? topPost.saves : '-'}</Typography>
             <Typography variant="body2">Saves</Typography>
-            <Typography variant="h5">{latestKpi ? latestKpi.pinnedReelWatchTime : '-'}</Typography>
-            <Typography variant="body2">Avg. watch time</Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} md={4}>
@@ -334,13 +334,13 @@ const Dashboard: React.FC = () => {
           <Paper sx={{ p: 3, bgcolor: '#23284a', color: 'white', borderRadius: 3 }}>
             <Typography variant="subtitle1">Latest story</Typography>
             <Divider sx={{ bgcolor: '#2e365a', my: 1 }} />
-            <Typography variant="h5">{latestStory ? latestStory.replies : '-'}</Typography>
+            <Typography variant="h5">{latestStory && latestStory.replies != null ? latestStory.replies : '-'}</Typography>
             <Typography variant="body2">Replies</Typography>
-            <Typography variant="h5">{latestStory ? latestStory.shares : '-'}</Typography>
+            <Typography variant="h5">{latestStory && latestStory.shares != null ? latestStory.shares : '-'}</Typography>
             <Typography variant="body2">Shares</Typography>
-            <Typography variant="h5">{latestStory ? latestStory.impressions : '-'}</Typography>
+            <Typography variant="h5">{latestStory && latestStory.impressions != null ? latestStory.impressions : '-'}</Typography>
             <Typography variant="body2">Impressions</Typography>
-            <Typography variant="h5">{latestStory ? latestStory.profileVisits : '-'}</Typography>
+            <Typography variant="h5">{latestStory && latestStory.profileVisits != null ? latestStory.profileVisits : '-'}</Typography>
             <Typography variant="body2">Profile visits</Typography>
           </Paper>
         </Grid>
