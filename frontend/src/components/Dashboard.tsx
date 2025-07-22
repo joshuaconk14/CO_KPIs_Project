@@ -6,6 +6,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import './dashboard.css';
+import { apiUrl, wsUrl } from '../config/config';
 
 interface AccountKpi {
   id: number;
@@ -77,9 +78,9 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       try {
         const [kpiRes, postsRes, storyRes] = await Promise.all([
-          fetch('http://localhost:8080/api/instagram/account-kpis'),
-          fetch('http://localhost:8080/api/instagram/posts'),
-          fetch('http://localhost:8080/api/instagram/latest-story'),
+          fetch(`${apiUrl}/api/instagram/account-kpis`),
+          fetch(`${apiUrl}/api/instagram/posts`),
+          fetch(`${apiUrl}/api/instagram/latest-story`),
         ]);
         const kpiData = await kpiRes.json();
         const postsData = await postsRes.json();
@@ -96,7 +97,7 @@ const Dashboard: React.FC = () => {
     fetchData();
 
     const client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws/kpi'),
+      webSocketFactory: () => new SockJS(wsUrl),
       onConnect: () => {
         console.log('WebSocket Connected');
         client.subscribe('/topic/kpi-updates', message => {
@@ -129,7 +130,7 @@ const Dashboard: React.FC = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await fetch('http://localhost:8080/api/instagram/refresh', { method: 'POST' });
+      await fetch(`${apiUrl}/api/instagram/refresh`, { method: 'POST' });
       // Data will be updated by the websocket, no need to fetch manually here.
     } catch (error) {
       console.error("Failed to trigger refresh", error);

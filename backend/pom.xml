@@ -46,11 +46,7 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+        <!-- Remove H2 dependency for production -->
         
         <!-- Lombok for reducing boilerplate code -->
         <dependency>
