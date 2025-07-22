@@ -12,7 +12,6 @@ backend/.classpath
 backend/.project
 backend/.settings/
 backend/.env
-frontend/.env.*
 
 # Frontend (Node/React)
 frontend/node_modules/
