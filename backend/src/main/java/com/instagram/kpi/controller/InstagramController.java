@@ -1,6 +1,8 @@
 package com.instagram.kpi.controller;
 
 import com.instagram.kpi.model.InstagramPost;
+import com.instagram.kpi.model.InstagramStory;
+import com.instagram.kpi.repository.InstagramStoryRepository;
 import com.instagram.kpi.service.InstagramService;
 // import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +14,11 @@ import java.util.List;
 @RequestMapping("/api/instagram")
 public class InstagramController {
     private final InstagramService instagramService;
+    private final InstagramStoryRepository storyRepository;
 
-    public InstagramController(InstagramService instagramService) {
+    public InstagramController(InstagramService instagramService, InstagramStoryRepository storyRepository) {
         this.instagramService = instagramService;
+        this.storyRepository = storyRepository;
     }
 
     @GetMapping("/posts")
@@ -31,5 +35,12 @@ public class InstagramController {
     public ResponseEntity<Void> refreshPosts() {
         instagramService.refreshAllData();
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/latest-story")
+    public ResponseEntity<InstagramStory> getLatestStory() {
+        return storyRepository.findTopByOrderByPostedAtDesc()
+            .map(ResponseEntity::ok)
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 } 

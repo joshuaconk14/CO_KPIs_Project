@@ -1,21 +1,17 @@
 package com.instagram.kpi.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDateTime;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
 @Entity
-@Table(name = "instagram_posts")
-public class InstagramPost {
+@Table(name = "instagram_pinned_reel")
+public class InstagramPinnedReel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String postId;
+    private String reelId;
 
     @Column(length = 2000)
     private String caption;
@@ -27,8 +23,7 @@ public class InstagramPost {
     private Integer comments;
     private Integer shares;
     private Integer saves;
-    private Integer reach;
-    private Integer impressions;
+    private Integer avgWatchTime; // in seconds
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -37,8 +32,8 @@ public class InstagramPost {
     private LocalDateTime updatedAt;
 
     // Manual getters and setters
-    public String getPostId() { return postId; }
-    public void setPostId(String postId) { this.postId = postId; }
+    public String getReelId() { return reelId; }
+    public void setReelId(String reelId) { this.reelId = reelId; }
     
     public String getCaption() { return caption; }
     public void setCaption(String caption) { this.caption = caption; }
@@ -58,11 +53,8 @@ public class InstagramPost {
     public Integer getSaves() { return saves; }
     public void setSaves(Integer saves) { this.saves = saves; }
     
-    public Integer getReach() { return reach; }
-    public void setReach(Integer reach) { this.reach = reach; }
-    
-    public Integer getImpressions() { return impressions; }
-    public void setImpressions(Integer impressions) { this.impressions = impressions; }
+    public Integer getAvgWatchTime() { return avgWatchTime; }
+    public void setAvgWatchTime(Integer avgWatchTime) { this.avgWatchTime = avgWatchTime; }
 
     @PrePersist
     protected void onCreate() {
@@ -74,4 +66,4 @@ public class InstagramPost {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-}
+} 

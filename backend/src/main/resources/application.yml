@@ -48,6 +48,11 @@ management:
 
 instagram:
   api:
-    graph-api-version: v19.0
+    graph-api-version: v23.0
     access-token: ${INSTAGRAM_USER_ACCESS_TOKEN}
     business-account-id: ${INSTAGRAM_BUSINESS_ACCOUNT_ID}
+
+facebook:
+  app-id: ${FACEBOOK_APP_ID}
+  app-secret: ${FACEBOOK_APP_SECRET}
+  short-lived-token: ${FACEBOOK_SHORT_LIVED_TOKEN}
