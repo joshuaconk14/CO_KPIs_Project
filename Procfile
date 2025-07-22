@@ -1,1 +1,1 @@
-web: java -jar backend/target/kpi-dashboard-0.0.1-SNAPSHOT.jar 
+web: cd backend && mvn clean package -DskipTests && java -jar target/kpi-dashboard-0.0.1-SNAPSHOT.jar 
