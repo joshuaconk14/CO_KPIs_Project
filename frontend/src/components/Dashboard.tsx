@@ -36,6 +36,15 @@ interface InstagramPost {
   updatedAt: string;
 }
 
+interface InstagramStory {
+  storyId: string;
+  postedAt?: string;
+  replies: number;
+  shares: number;
+  impressions: number;
+  profileVisits: number;
+}
+
 const kpiOptions = [
   { value: 'likes', label: 'Likes' },
   { value: 'comments', label: 'Comments' },
@@ -61,19 +70,23 @@ const Dashboard: React.FC = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('month');
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [latestStory, setLatestStory] = useState<InstagramStory | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [kpiRes, postsRes] = await Promise.all([
+        const [kpiRes, postsRes, storyRes] = await Promise.all([
           fetch('http://localhost:8080/api/instagram/account-kpis'),
           fetch('http://localhost:8080/api/instagram/posts'),
+          fetch('http://localhost:8080/api/instagram/latest-story'),
         ]);
         const kpiData = await kpiRes.json();
         const postsData = await postsRes.json();
+        const storyData = await storyRes.json();
         setAccountKpis(kpiData);
         setPosts(postsData);
+        setLatestStory(storyData);
       } catch (error) {
         console.error("Failed to fetch initial data", error);
       } finally {
@@ -129,6 +142,9 @@ const Dashboard: React.FC = () => {
   const latestKpi = accountKpis.length > 0 ? accountKpis[accountKpis.length - 1] : null;
   // Get previous KPI for delta calculations
   const prevKpi = accountKpis.length > 1 ? accountKpis[accountKpis.length - 2] : null;
+
+  // Get the latest post (by postedAt)
+  const latestPost = posts.length > 0 ? posts.reduce((a, b) => new Date(a.postedAt) > new Date(b.postedAt) ? a : b) : null;
 
   const now = new Date();
   const selectedRange = timeRanges.find(r => r.value === selectedTimeRange);
@@ -304,14 +320,13 @@ const Dashboard: React.FC = () => {
           <Paper sx={{ p: 3, bgcolor: '#23284a', color: 'white', borderRadius: 3 }}>
             <Typography variant="subtitle1">Latest post</Typography>
             <Divider sx={{ bgcolor: '#2e365a', my: 1 }} />
-            {/* You can add more details here if you want */}
-            <Typography variant="h5">-</Typography>
+            <Typography variant="h5">{latestPost && latestPost.comments != null ? latestPost.comments : '-'}</Typography>
             <Typography variant="body2">Comments</Typography>
-            <Typography variant="h5">-</Typography>
+            <Typography variant="h5">{latestPost && latestPost.shares != null ? latestPost.shares : '-'}</Typography>
             <Typography variant="body2">Shares</Typography>
-            <Typography variant="h5">-</Typography>
+            <Typography variant="h5">{latestPost && latestPost.likes != null ? latestPost.likes : '-'}</Typography>
             <Typography variant="body2">Likes</Typography>
-            <Typography variant="h5">-</Typography>
+            <Typography variant="h5">{latestPost && latestPost.saves != null ? latestPost.saves : '-'}</Typography>
             <Typography variant="body2">Saves</Typography>
           </Paper>
         </Grid>
@@ -319,13 +334,13 @@ const Dashboard: React.FC = () => {
           <Paper sx={{ p: 3, bgcolor: '#23284a', color: 'white', borderRadius: 3 }}>
             <Typography variant="subtitle1">Latest story</Typography>
             <Divider sx={{ bgcolor: '#2e365a', my: 1 }} />
-            <Typography variant="h5">11</Typography>
+            <Typography variant="h5">{latestStory ? latestStory.replies : '-'}</Typography>
             <Typography variant="body2">Replies</Typography>
-            <Typography variant="h5">183</Typography>
+            <Typography variant="h5">{latestStory ? latestStory.shares : '-'}</Typography>
             <Typography variant="body2">Shares</Typography>
-            <Typography variant="h5">3,492</Typography>
+            <Typography variant="h5">{latestStory ? latestStory.impressions : '-'}</Typography>
             <Typography variant="body2">Impressions</Typography>
-            <Typography variant="h5">85</Typography>
+            <Typography variant="h5">{latestStory ? latestStory.profileVisits : '-'}</Typography>
             <Typography variant="body2">Profile visits</Typography>
           </Paper>
         </Grid>

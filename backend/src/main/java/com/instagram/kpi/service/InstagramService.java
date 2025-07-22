@@ -4,6 +4,8 @@ import com.instagram.kpi.model.InstagramPost;
 import com.instagram.kpi.model.InstagramAccountKpi;
 import com.instagram.kpi.repository.InstagramPostRepository;
 import com.instagram.kpi.repository.InstagramAccountKpiRepository;
+import com.instagram.kpi.repository.InstagramStoryRepository;
+import com.instagram.kpi.model.InstagramStory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +32,7 @@ public class InstagramService {
 
     private final InstagramPostRepository postRepository;
     private final InstagramAccountKpiRepository accountKpiRepository;
+    private final InstagramStoryRepository storyRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final WebClient webClient;
 
@@ -44,10 +47,12 @@ public class InstagramService {
 
     public InstagramService(InstagramPostRepository postRepository,
                             InstagramAccountKpiRepository accountKpiRepository,
+                            InstagramStoryRepository storyRepository,
                             SimpMessagingTemplate messagingTemplate,
                             WebClient.Builder webClientBuilder) {
         this.postRepository = postRepository;
         this.accountKpiRepository = accountKpiRepository;
+        this.storyRepository = storyRepository;
         this.messagingTemplate = messagingTemplate;
         this.webClient = webClientBuilder.baseUrl("https://graph.facebook.com").build();
     }
@@ -72,6 +77,8 @@ public class InstagramService {
         log.info("--- Refreshing all Instagram data ---");
         fetchLatestPosts();
         fetchAccountKpis();
+        fetchPinnedReel();
+        fetchLatestStory();
     }
 
     @Transactional
@@ -79,8 +86,8 @@ public class InstagramService {
         try {
             log.info("Fetching latest posts from Instagram API for account: {}", businessAccountId);
             
-            // Restoring the full field list now that the token issue is resolved.
-            String mediaUrl = String.format("/%s/%s/media?fields=id,caption,media_type,timestamp,permalink,like_count,comments_count&access_token=%s",
+            // Enhanced field list for better data coverage
+            String mediaUrl = String.format("/%s/%s/media?fields=id,caption,media_type,timestamp,permalink,like_count,comments_count,insights.metric(reach,impressions,saved,comments,shares,likes)&access_token=%s",
                 graphApiVersion, businessAccountId, accessToken);
 
             JsonNode response = webClient.get()
@@ -112,8 +119,27 @@ public class InstagramService {
                         post.setComments(postNode.get("comments_count").asInt());
                     }
                     
-                    // Fetch and set detailed insights (reach, impressions, saves)
-                    setPostInsights(post);
+                    // Parse insights if available in the response
+                    if (postNode.has("insights") && postNode.get("insights").has("data")) {
+                        for (JsonNode insightNode : postNode.get("insights").get("data")) {
+                            String name = insightNode.get("name").asText();
+                            int value = insightNode.get("values").get(0).get("value").asInt();
+                            switch (name) {
+                                case "reach":
+                                    post.setReach(value);
+                                    break;
+                                case "impressions":
+                                    post.setImpressions(value);
+                                    break;
+                                case "saved":
+                                    post.setSaves(value);
+                                    break;
+                            }
+                        }
+                    } else {
+                        // Fallback to separate insights call if not included in main response
+                        setPostInsights(post);
+                    }
 
                     fetchedPosts.add(postRepository.save(post));
                 }
@@ -124,6 +150,85 @@ public class InstagramService {
         } catch (Exception e) {
             log.error("Error fetching latest posts", e);
             throw new RuntimeException("Failed to fetch latest posts", e);
+        }
+    }
+
+    @Transactional
+    public void fetchPinnedReel() {
+        try {
+            log.info("Fetching pinned reel from Instagram API for account: {}", businessAccountId);
+            
+            // Remove media_type filter and get all media, then filter for reels
+            String pinnedReelUrl = String.format("/%s/%s/media?fields=id,caption,media_type,timestamp,permalink,like_count,comments_count,insights.metric(comments,shares,likes,saves,avg_watch_time)&limit=50&access_token=%s",
+                graphApiVersion, businessAccountId, accessToken);
+
+            JsonNode response = webClient.get()
+                .uri(pinnedReelUrl)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+
+            if (response != null && response.has("data")) {
+                // Find the first reel in the response
+                for (JsonNode mediaNode : response.get("data")) {
+                    if (mediaNode.has("media_type") && "REELS".equals(mediaNode.get("media_type").asText())) {
+                        log.info("Successfully fetched pinned reel data: {}", mediaNode.get("id").asText());
+                        // TODO: Save to InstagramPinnedReel model
+                        break; // Get the first reel only
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error fetching pinned reel", e);
+        }
+    }
+
+    @Transactional
+    public void fetchLatestStory() {
+        try {
+            log.info("Fetching latest story from Instagram API for account: {}", businessAccountId);
+            
+            String latestStoryUrl = String.format("/%s/%s/media?fields=id,media_type,timestamp,insights.metric(replies,shares,impressions,profile_visits)&media_type=STORY&limit=1&access_token=%s",
+                graphApiVersion, businessAccountId, accessToken);
+
+            JsonNode response = webClient.get()
+                .uri(latestStoryUrl)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+
+            if (response != null && response.has("data") && response.get("data").size() > 0) {
+                JsonNode storyNode = response.get("data").get(0);
+                InstagramStory story = new InstagramStory();
+                story.setStoryId(storyNode.get("id").asText());
+                if (storyNode.has("timestamp")) {
+                    story.setPostedAt(ZonedDateTime.parse(storyNode.get("timestamp").asText(), INSTAGRAM_DATE_FORMATTER).toLocalDateTime());
+                }
+                if (storyNode.has("insights") && storyNode.get("insights").has("data")) {
+                    for (JsonNode insightNode : storyNode.get("insights").get("data")) {
+                        String name = insightNode.get("name").asText();
+                        int value = insightNode.get("values").get(0).get("value").asInt();
+                        switch (name) {
+                            case "replies":
+                                story.setReplies(value);
+                                break;
+                            case "shares":
+                                story.setShares(value);
+                                break;
+                            case "impressions":
+                                story.setImpressions(value);
+                                break;
+                            case "profile_visits":
+                                story.setProfileVisits(value);
+                                break;
+                        }
+                    }
+                }
+                storyRepository.save(story);
+                log.info("Successfully fetched and saved latest story data: {}", story.getStoryId());
+            }
+        } catch (Exception e) {
+            log.error("Error fetching latest story", e);
         }
     }
 
