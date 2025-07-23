@@ -5,7 +5,7 @@ const config = {
   },
   production: {
     apiUrl: process.env.REACT_APP_API_URL || 'https://co-kpi-backend.herokuapp.com',
-    wsUrl: process.env.REACT_APP_WS_URL || 'wss://co-kpi-backend.herokuapp.com/ws/kpi'
+    wsUrl: process.env.REACT_APP_WS_URL || 'https://co-kpi-backend.herokuapp.com/ws/kpi'
   }
 };
 
