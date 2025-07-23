@@ -18,7 +18,7 @@ spring:
       enabled: ${H2_CONSOLE_ENABLED:false}
       path: /h2-console
   websocket:
-    allowed-origins: ${WEBSOCKET_ALLOWED_ORIGINS:http://localhost:3000,https://your-frontend-domain.vercel.app}
+    allowed-origins: ${WEBSOCKET_ALLOWED_ORIGINS:http://localhost:3000,https://co-kpi-dashboard.vercel.app}
 
 server:
   port: ${PORT:8080}

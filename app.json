@@ -1,7 +1,7 @@
 {
   "name": "co-kpi-backend",
   "description": "Instagram KPI Dashboard Backend",
-  "repository": "https://github.com/yourusername/Project_CO_KPIs",
+  "repository": "https://github.com/joshuaconk14/Project_CO_KPIs",
   "buildpacks": [
     {
       "url": "heroku/java"
