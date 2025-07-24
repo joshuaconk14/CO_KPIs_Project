@@ -1,1 +1,1 @@
-web: mvn clean package -pl backend -am && java -jar backend/target/kpi-dashboard-0.0.1-SNAPSHOT.jar 
+web: java -jar backend/target/kpi-dashboard-0.0.1-SNAPSHOT.jar 
