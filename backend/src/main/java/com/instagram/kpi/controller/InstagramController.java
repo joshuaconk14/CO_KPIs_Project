@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/instagram")
 public class InstagramController {
     private final InstagramService instagramService;
     private final InstagramStoryRepository storyRepository;
@@ -21,23 +20,28 @@ public class InstagramController {
         this.storyRepository = storyRepository;
     }
 
-    @GetMapping("/posts")
+    @GetMapping("/")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("Instagram KPI API is running!");
+    }
+
+    @GetMapping("/api/instagram/posts")
     public ResponseEntity<List<InstagramPost>> getAllPosts() {
         return ResponseEntity.ok(instagramService.getAllPosts());
     }
 
-    @GetMapping("/posts/{postId}")
+    @GetMapping("/api/instagram/posts/{postId}")
     public ResponseEntity<InstagramPost> getPostById(@PathVariable String postId) {
         return ResponseEntity.ok(instagramService.getPostById(postId));
     }
 
-    @PostMapping("/refresh")
+    @PostMapping("/api/instagram/refresh")
     public ResponseEntity<Void> refreshPosts() {
         instagramService.refreshAllData();
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/latest-story")
+    @GetMapping("/api/instagram/latest-story")
     public ResponseEntity<InstagramStory> getLatestStory() {
         return storyRepository.findTopByOrderByPostedAtDesc()
             .map(ResponseEntity::ok)
