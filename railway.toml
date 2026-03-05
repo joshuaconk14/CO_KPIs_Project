@@ -1,0 +1,9 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "mvn -pl backend -am clean package -DskipTests"
+
+[deploy]
+startCommand = "sh -c 'java -Dserver.port=$PORT -jar backend/target/*.jar'"
+healthcheckPath = "/actuator/health"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
