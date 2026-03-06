@@ -3,7 +3,7 @@ builder = "NIXPACKS"
 buildCommand = "mvn -pl backend -am clean package -DskipTests"
 
 [deploy]
-startCommand = "sh -c 'if [ -n \"$DATABASE_URL\" ] && [ -z \"$SPRING_DATASOURCE_URL\" ]; then export SPRING_DATASOURCE_URL=$(echo \"$DATABASE_URL\" | sed -e \"s#^postgres://#jdbc:postgresql://#\" -e \"s#^postgresql://#jdbc:postgresql://#\"); fi; if [ -n \"$PGUSER\" ] && [ -z \"$SPRING_DATASOURCE_USERNAME\" ]; then export SPRING_DATASOURCE_USERNAME=\"$PGUSER\"; fi; if [ -n \"$PGPASSWORD\" ] && [ -z \"$SPRING_DATASOURCE_PASSWORD\" ]; then export SPRING_DATASOURCE_PASSWORD=\"$PGPASSWORD\"; fi; java -Dserver.port=$PORT -jar backend/target/*.jar'"
+startCommand = "sh -c 'if [ -n \"$SPRING_DATASOURCE_URL\" ]; then export SPRING_DATASOURCE_URL=$(echo \"$SPRING_DATASOURCE_URL\" | sed -e \"s#^postgres://#jdbc:postgresql://#\" -e \"s#^postgresql://#jdbc:postgresql://#\"); elif [ -n \"$DATABASE_URL\" ]; then export SPRING_DATASOURCE_URL=$(echo \"$DATABASE_URL\" | sed -e \"s#^postgres://#jdbc:postgresql://#\" -e \"s#^postgresql://#jdbc:postgresql://#\"); fi; if [ -n \"$PGUSER\" ] && [ -z \"$SPRING_DATASOURCE_USERNAME\" ]; then export SPRING_DATASOURCE_USERNAME=\"$PGUSER\"; fi; if [ -n \"$PGPASSWORD\" ] && [ -z \"$SPRING_DATASOURCE_PASSWORD\" ]; then export SPRING_DATASOURCE_PASSWORD=\"$PGPASSWORD\"; fi; java -Dserver.port=$PORT -jar backend/target/*.jar'"
 healthcheckPath = "/actuator/health"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
