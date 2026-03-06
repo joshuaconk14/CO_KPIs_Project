@@ -69,7 +69,7 @@ const Dashboard: React.FC = () => {
   const [posts, setPosts] = useState<InstagramPost[]>([]);
   const [selectedKPI, setSelectedKPI] = useState<string>('likes');
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('month');
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [latestStory, setLatestStory] = useState<InstagramStory | null>(null);
 
