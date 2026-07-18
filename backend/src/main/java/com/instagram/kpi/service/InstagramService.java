@@ -81,13 +81,6 @@ public class InstagramService {
                 .orElseThrow(() -> new RuntimeException("Post not found with ID: " + postId));
     }
 
-    @Scheduled(fixedRate = 3600000) // Run every hour (3,600,000 milliseconds)
-    public void scheduledFetch() {
-        log.info("--- Starting scheduled data fetch ---");
-        refreshAllData();
-        log.info("--- Finished scheduled data fetch ---");
-    }
-
     public void refreshAllData() {
         log.info("--- Refreshing all Instagram data ---");
         fetchLatestPosts();
